@@ -10,12 +10,10 @@ double CalculateVn(double QnQnA, double QnAQnB, double w);
 double CalculateVnError(double QnQnA, double QnAQnB, double QnQnAerr, double QnAQnBerr, double w, double wErr);
 void checkUnderOverFlow( TH1 *h );
 
-void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyFlowGraphs.root", const int iDet=0, const int centBin=0) {
+void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyFlowGraphs.root", const int iDet=0) {
 
     TFile *fIn = TFile::Open(sInputName, "read");
     TFile *fOut = TFile::Open(sOutputName, "recreate");
-
-    int nPtBins = 9;
 
     int i, n;
     double pi = TMath::Pi();
@@ -31,9 +29,9 @@ void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyF
         cout << inputFlow[i] << endl;
     }
 
-    TH1D *hSqrtSumWeights[DET_N][CENTBINS_N];
-    hSqrtSumWeights[iDet][centBin] = (TH1D*)fIn->Get(Form("hSqrtSumWeightsD%02iCENT%02i",iDet,centBin));
-    checkUnderOverFlow(hSqrtSumWeights[iDet][centBin]);
+    TH1D *hSqrtSumWeights[DET_N];
+    hSqrtSumWeights[iDet] = (TH1D*)fIn->Get(Form("hSqrtSumWeightsD%02i",iDet));
+    checkUnderOverFlow(hSqrtSumWeights[iDet]);
 
     TH1D *hInputFlow = new TH1D("hInputFlow", "hInputFlow", nCoef, 0.5, double(nCoef)+0.5);
     hInputFlow->SetLineStyle(1);
@@ -48,17 +46,17 @@ void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyF
 
     //=====vn=====
     // Observed vn
-    TH1D *hVnObs[nCoef][DET_N][CENTBINS_N];
+    TH1D *hVnObs[nCoef][DET_N];
     for (i = 0; i < nCoef; i++) {
-        hVnObs[i][iDet][centBin] = (TH1D*)fIn->Get(Form("hVnObsH%02iD%02iCENT%02i",i+1,iDet,centBin));
-        checkUnderOverFlow(hVnObs[i][iDet][centBin]);
+        hVnObs[i][iDet] = (TH1D*)fIn->Get(Form("hVnObsH%02iD%02i",i+1,iDet));
+        checkUnderOverFlow(hVnObs[i][iDet]);
     }
 
     // Resolution parameter
-    TH1D *hRsub[nCoef][DET_N][CENTBINS_N];
+    TH1D *hRsub[nCoef][DET_N];
     for (i = 0; i < nCoef; i++) {
-        hRsub[i][iDet][centBin] = (TH1D*)fIn->Get(Form("hRsubH%02iD%02iCENT%02i",i+1,iDet,centBin));
-        checkUnderOverFlow(hRsub[i][iDet][centBin]);
+        hRsub[i][iDet] = (TH1D*)fIn->Get(Form("hRsubH%02iD%02i",i+1,iDet));
+        checkUnderOverFlow(hRsub[i][iDet]);
     }
 
     double vn[nCoef], errorVn[nCoef] = {0};
@@ -74,9 +72,9 @@ void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyF
 
     for (i = 0; i < nCoef; i++) {
         n = i+1;
-        vn[i] = hVnObs[i][iDet][centBin]->GetMean();
+        vn[i] = hVnObs[i][iDet]->GetMean();
 
-        Rinit = TMath::Sqrt(hRsub[i][iDet][centBin]->GetMean());
+        Rinit = TMath::Sqrt(hRsub[i][iDet]->GetMean());
         khi = RIter(khi0, Rinit, err);
         R[i] = R1(TMath::Sqrt(2)*khi); //Because khi sim sqrt(Multi) and full event has twice multiplicity compared to A or B.
         errorR[i] = CalculateRerror(khi, err);
@@ -84,7 +82,7 @@ void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyF
         cout << "R=    " << R[i] <<                       "  err=" << errorR[i] << "\n";
 
         vn[i] /= R[i];
-        errorVn[i] = GetVnError(hVnObs[i][iDet][centBin]->GetMean(), hVnObs[i][iDet][centBin]->GetMeanError(), R[i], errorR[i]);
+        errorVn[i] = GetVnError(hVnObs[i][iDet]->GetMean(), hVnObs[i][iDet]->GetMeanError(), R[i], errorR[i]);
 
         if(inputFlow[i]==0) {
             vnRatio[i] = 0;
@@ -97,23 +95,23 @@ void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyF
     }
 
     //vn{EP} and vn{SP}
-    TH1D *hQnQnAEP[nCoef][DET_N][CENTBINS_N];
-    TH1D *hQnAQnBEP[nCoef][DET_N][CENTBINS_N];
-    TH1D *hQnQnASP[nCoef][DET_N][CENTBINS_N];
-    TH1D *hQnAQnBSP[nCoef][DET_N][CENTBINS_N];
+    TH1D *hQnQnAEP[nCoef][DET_N];
+    TH1D *hQnAQnBEP[nCoef][DET_N];
+    TH1D *hQnQnASP[nCoef][DET_N];
+    TH1D *hQnAQnBSP[nCoef][DET_N];
     for (i = 0; i < nCoef; i++) {
-        hQnQnAEP[i][iDet][centBin] = (TH1D*)fIn->Get(Form("hQnQnAEPH%02iD%02iCENT%02i",i+1,iDet,centBin));
-        checkUnderOverFlow(hQnQnAEP[i][iDet][centBin]);
-        hQnAQnBEP[i][iDet][centBin] = (TH1D*)fIn->Get(Form("hQnAQnBEPH%02iD%02iCENT%02i",i+1,iDet,centBin));
-        checkUnderOverFlow(hQnAQnBEP[i][iDet][centBin]);
-        hQnQnASP[i][iDet][centBin] = (TH1D*)fIn->Get(Form("hQnQnASPH%02iD%02iCENT%02i",i+1,iDet,centBin));
-        checkUnderOverFlow(hQnQnASP[i][iDet][centBin]);
-        hQnAQnBSP[i][iDet][centBin] = (TH1D*)fIn->Get(Form("hQnAQnBSPH%02iD%02iCENT%02i",i+1,iDet,centBin));
-        checkUnderOverFlow(hQnAQnBSP[i][iDet][centBin]);
+        hQnQnAEP[i][iDet] = (TH1D*)fIn->Get(Form("hQnQnAEPH%02iD%02i",i+1,iDet));
+        checkUnderOverFlow(hQnQnAEP[i][iDet]);
+        hQnAQnBEP[i][iDet] = (TH1D*)fIn->Get(Form("hQnAQnBEPH%02iD%02i",i+1,iDet));
+        checkUnderOverFlow(hQnAQnBEP[i][iDet]);
+        hQnQnASP[i][iDet] = (TH1D*)fIn->Get(Form("hQnQnASPH%02iD%02i",i+1,iDet));
+        checkUnderOverFlow(hQnQnASP[i][iDet]);
+        hQnAQnBSP[i][iDet] = (TH1D*)fIn->Get(Form("hQnAQnBSPH%02iD%02i",i+1,iDet));
+        checkUnderOverFlow(hQnAQnBSP[i][iDet]);
     }
 
-    double w = hSqrtSumWeights[iDet][centBin]->GetMean();
-    double wError = hSqrtSumWeights[iDet][centBin]->GetMeanError();
+    double w = hSqrtSumWeights[iDet]->GetMean();
+    double wError = hSqrtSumWeights[iDet]->GetMeanError();
 
     double vnEP[nCoef], errorVnEP[nCoef] = {0};
     double vnSP[nCoef], errorVnSP[nCoef] = {0};
@@ -121,10 +119,10 @@ void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyF
     double vnEPRatio[nCoef], errorVnEPRatio[nCoef] = {0};
     double vnSPRatio[nCoef], errorVnSPRatio[nCoef] = {0};
     for (i=0; i<nCoef; i++) {
-        vnEP[i] = CalculateVn(hQnQnAEP[i][iDet][centBin]->GetMean(), hQnAQnBEP[i][iDet][centBin]->GetMean(), w);
-        errorVnEP[i] = CalculateVnError(hQnQnAEP[i][iDet][centBin]->GetMean(), hQnAQnBEP[i][iDet][centBin]->GetMean(), hQnQnAEP[i][iDet][centBin]->GetMeanError(), hQnAQnBEP[i][iDet][centBin]->GetMeanError(),  w, wError);
-        vnSP[i] = CalculateVn(hQnQnASP[i][iDet][centBin]->GetMean(), hQnAQnBSP[i][iDet][centBin]->GetMean(), w);
-        errorVnSP[i] = CalculateVnError(hQnQnASP[i][iDet][centBin]->GetMean(), hQnAQnBSP[i][iDet][centBin]->GetMean(), hQnQnASP[i][iDet][centBin]->GetMeanError(), hQnAQnBSP[i][iDet][centBin]->GetMeanError(),  w, wError);
+        vnEP[i] = CalculateVn(hQnQnAEP[i][iDet]->GetMean(), hQnAQnBEP[i][iDet]->GetMean(), w);
+        errorVnEP[i] = CalculateVnError(hQnQnAEP[i][iDet]->GetMean(), hQnAQnBEP[i][iDet]->GetMean(), hQnQnAEP[i][iDet]->GetMeanError(), hQnAQnBEP[i][iDet]->GetMeanError(),  w, wError);
+        vnSP[i] = CalculateVn(hQnQnASP[i][iDet]->GetMean(), hQnAQnBSP[i][iDet]->GetMean(), w);
+        errorVnSP[i] = CalculateVnError(hQnQnASP[i][iDet]->GetMean(), hQnAQnBSP[i][iDet]->GetMean(), hQnQnASP[i][iDet]->GetMeanError(), hQnAQnBSP[i][iDet]->GetMeanError(),  w, wError);
 
         if(inputFlow[i]==0) {
             vnEPRatio[i] = 0;
@@ -140,23 +138,6 @@ void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyF
         }
     }
 
-    // pT bins
-    TH1D *hQnQnAPtBin[nPtBins];
-    TH1D *hSqrtSumWeightsPtBins[nPtBins];
-    for (i=0; i<nPtBins; i++) {
-        hQnQnAPtBin[i] = (TH1D*)fIn->Get(Form("hQnQnAPtBin%02i",i+1));
-        checkUnderOverFlow(hQnQnAPtBin[i]);
-        hSqrtSumWeightsPtBins[i] = (TH1D*)fIn->Get(Form("hSqrtSumWeightsPtBinsH%02i",i+1));
-        checkUnderOverFlow(hSqrtSumWeightsPtBins[i]);
-    }
-
-    double ptBin[nPtBins];
-    double ptBinError[nPtBins];
-    for (i=0; i<nPtBins; i++) {
-        ptBin[i] = CalculateVn(hQnQnAPtBin[i]->GetMean(), hQnAQnBEP[1][iDet][centBin]->GetMean(), hSqrtSumWeightsPtBins[i]->GetMean());
-        ptBinError[i] = CalculateVnError(hQnQnAPtBin[i]->GetMean(), hQnAQnBEP[1][iDet][centBin]->GetMean(), hQnQnAPtBin[i]->GetMeanError(), hQnAQnBEP[1][iDet][centBin]->GetMeanError(), hSqrtSumWeightsPtBins[i]->GetMean(), hSqrtSumWeightsPtBins[i]->GetMeanError());
-    }
-
     // Make graphs
     TGraphErrors *gVn = new TGraphErrors(nCoef);
     TGraphErrors *gVnEP = new TGraphErrors(nCoef);
@@ -166,8 +147,6 @@ void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyF
     TGraphErrors *gVnRatio = new TGraphErrors(nCoef);
     TGraphErrors *gVnEPRatio = new TGraphErrors(nCoef);
     TGraphErrors *gVnSPRatio = new TGraphErrors(nCoef);
-
-    TGraphErrors *gPtBin = new TGraphErrors(6);
 
     for(i = 0; i < nCoef; i++){
         gVn->SetPoint(i, double(i+1)-0.1, vn[i]);
@@ -187,21 +166,11 @@ void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyF
         gVnSPRatio->SetPointError(i, 0.0, errorVnSPRatio[i]);
     }
 
-    double point = 0.0;
-    double step = 0.0;
-    for (i=0; i<nPtBins; i++) {
-        step += 0.2;
-        point += step;
-        gPtBin->SetPoint(i, point-step/2.0, ptBin[i]);
-        gPtBin->SetPointError(i, step/2.0, ptBinError[i]);
-    }
-
     fOut->cd();
     hPhi->Write("hPhi");
     hInputFlow->Write("hInputFlow");
     gVn->Write("gVn");
     gR->Write("gR");
-    gPtBin->Write("gPtBin");
     gVnEP->Write("gVnEP");
     gVnSP->Write("gVnSP");
 

@@ -16,15 +16,13 @@ const double vr = 0.6;
 const double ringEta[RINGS_N+1] = {2.20, 2.81, 3.41, 3.9, 4.47, 5.06};
 
 enum DETECTOR {
-    D_TPC,
-    D_T0P_A,
-    D_T0P_C,
-    D_VOP,
+    D_FT0_A,
+    D_FT0_C,
+    D_FVO,
     DET_N
 };
 
 const double cov[DET_N][2] = {
-    {-0.9, 0.9},
     {3.8, 5.4},
     {-3.3, -2.2},
     {2.2, 5.06}

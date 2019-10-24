@@ -1,4 +1,4 @@
-PROGRAM       = toyFlow
+PROGRAM       = flowO2Sim
 
 version       = toka
 CXX           = g++
@@ -10,10 +10,8 @@ SOFLAGS       = -shared
 CXXFLAGS += $(shell root-config --cflags)
 LDFLAGS  = $(shell root-config --libs)
 
-HDRSDICT =  src/JToyMCTrack.h \
-			src/JHistos.h \
+HDRSDICT =  src/JHistos.h \
 			src/JInputs.h \
-			src/JEventLists.h \
 
 ALICEPATH = /home/heimarry/alice/sw/slc7_x86-64
 O2INCLUDES = -I$(ALICEPATH)/O2/1.0.0-1/include -I$(ALICEPATH)/O2/1.0.0-1/include/AliTPCCommon -I$(ALICEPATH)/O2/1.0.0-1/include/DataFormatsTOF -I$(ALICEPATH)/FairRoot/c672f280ec-54/include -I$(ALICEPATH)/FairLogger/v1.2.0-9/include -I$(ALICEPATH)/boost/v1.68.0-30/include -I$(ALICEPATH)/ms_gsl/1-8/include -I$(ALICEPATH)/O2/1.0.0-1/include/CommonConstants -I$(ALICEPATH)/O2/1.0.0-1/include/GPU

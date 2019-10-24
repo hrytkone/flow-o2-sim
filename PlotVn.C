@@ -59,8 +59,6 @@ void PlotVn() {
         gVnEPRatio[i] = (TGraphErrors*) fIn[i]->Get("gVnEPRatio");
         gVnSPRatio[i] = (TGraphErrors*) fIn[i]->Get("gVnSPRatio");
 
-        gPtBin[i] = (TGraphErrors*) fIn[i]->Get("gPtBin");
-
         gR[i]->SetMarkerStyle(mMarker[i]+1);
         gR[i]->SetMarkerColor(i+1);
         gR[i]->SetMarkerSize(mSize);
@@ -76,10 +74,6 @@ void PlotVn() {
         gVnSP[i]->SetMarkerStyle(mMarker[i]); gVnSPRatio[i]->SetMarkerStyle(mMarker[i]);
         gVnSP[i]->SetMarkerColor(i+4); gVnSPRatio[i]->SetMarkerColor(i+4);
         gVnSP[i]->SetMarkerSize(mSize); gVnSPRatio[i]->SetMarkerSize(mSize);
-
-        gPtBin[i]->SetMarkerStyle(mMarker[i]);
-        gPtBin[i]->SetMarkerColor(i+2);
-        gPtBin[i]->SetMarkerSize(mSize);
 
     }
 
@@ -162,28 +156,12 @@ void PlotVn() {
     leg2->Draw("SAME");
     c2->SaveAs("figures/Rn.pdf");
 
-    TCanvas *c3 = new TCanvas("c3", "v2(pT)");
-    c3->cd();
-
-    TF1 *fVnDist = new TF1("fVnDist", VnDist, 0.0, 10.0, 3);
-    fVnDist->SetParameters(2.0, 1.0, 0.15);
-
-    for (i=0; i<nsets; i++) {
-        if (i==0) {
-            gPtBin[i]->Draw("AP");
-            gPtBin[i]->SetTitle("v2 as function of pT; v2; pT");
-        }
-
-        fVnDist->Draw("SAME");
-    }
-    c3->SaveAs("figures/v2Pt.pdf");
-
     TH1D *hPhi = (TH1D*)fIn[0]->Get("hPhi");
     TH1D *hPhiNonuni = (TH1D*)fIn[0]->Get("hPhiNonuni");
 
-    TCanvas *c4 = new TCanvas("c4", "Phi distribution");
+    TCanvas *c3 = new TCanvas("c3", "Phi distribution");
     hPhi->Draw("HIST");
-    c4->SaveAs("figures/phi.pdf");
+    c3->SaveAs("figures/phi.pdf");
 }
 
 double VnDist(double *x, double *p) {
