@@ -46,3 +46,5 @@ outputs/*
 nanoDict.cc
 nanoDict_rdict.pcm
 toyFlow
+*.json
+*.json.original

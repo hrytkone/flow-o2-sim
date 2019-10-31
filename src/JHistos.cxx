@@ -17,8 +17,6 @@ JHistos::JHistos(){
     hPt->Sumw2();
     hPhi = new TH1D("hPhi", "phi - uniform", 129, -pi, pi);
     hPhi->Sumw2();
-    hAnisotropicPhi = new TH1D("hAnisotropicPhi", "phi - anisotropic", 129, -2*pi, 2*pi);
-    hAnisotropicPhi->Sumw2();
     hEta = new TH1D("hEta", "pseudorapidity", 401, -6.0, 6.0);
 
     hMultiplicity = new TH1D("hMultiplicity", "Multiplicity - uniform", 300, 0.0, 30000.);

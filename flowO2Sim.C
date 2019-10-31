@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <stdlib.h>
 #include <vector>
@@ -18,6 +19,7 @@
 #include "TComplex.h"
 #include "TCanvas.h"
 #include "TTree.h"
+#include "TLeaf.h"
 
 // O2
 #include "SimulationDataFormat/MCTrack.h"
@@ -29,25 +31,30 @@
 
 using namespace std;
 
+void AnalyzeHits(vector<o2::ft0::HitType>* hitArrFT0, vector<o2::fv0::Hit>* hitArrFV0, TLeaf* ft0ChID, JHistos* histos, bool bUseFT0Granularity);
+
 double GetPhi(double x, double y);
-double GetPhi0(double phi, double *vn, double *psi);
-double AnisotropicPhiDist(double *x, double *p);
-double GetAnisotropicPhi(double x, double y, double phiTemp, double err, double *vn, double *psi, TF1 *fPhiDist);
-
-void AnalyzeHits(std::vector<o2::ft0::HitType>* hitArrFT0, std::vector<o2::fv0::Hit>* hitArrFV0, double* psi, double* vn, TF1* fPhiDist, JHistos* histos);
-
+double getFT0ChannelCenterX(int chID);
+double getFT0ChannelCenterY(int chID);
 void CalculateQvector(double phi, TComplex unitVec, TComplex &Qvec, double &norm, int n, double w);
 double GetEventPlane(TComplex Qvec, int n);
 double GetVnObs(TComplex Qvec, double phi, int n);
+
+//double GetPhi0(double phi, double *vn, double *psi);
+//double AnisotropicPhiDist(double *x, double *p);
+//double GetAnisotropicPhi(double x, double y, double phiTemp, double err, double *vn, double *psi, TF1 *fPhiDist);
 
 int main(int argc, char **argv) {
 
     TString inFileName = argc > 1 ? argv[1]:"o2sim.root";
     TString outFileName = argc > 2 ? argv[2]:"toyFlow.root";
+
     if(inFileName.EqualTo("help",TString::kIgnoreCase)) {
         cout << "Usage: " << argv[0] << " inputFileName.root" << " outputFileName.root" << endl;
         return 0;
     };
+
+    bool bUseFT0Granularity = 1;
 
     TStopwatch timer;
     timer.Start();
@@ -59,7 +66,7 @@ int main(int argc, char **argv) {
     TTree *tree = (TTree*)fIn->Get("o2sim");
     Int_t nEntries = (Int_t)tree->GetEntries();
 
-    const double scale = 1.0;
+    const double scale = 0.0;
     double vn[nCoef] = {scale*0.0, scale*0.15, scale*0.08, scale*0.0, scale*0.0};
     double psi[nCoef] = {0};
 
@@ -89,16 +96,16 @@ int main(int argc, char **argv) {
 
     JHistos *histos = new JHistos();
 
-    TF1 *fPhiDist = new TF1("fPhiDist", AnisotropicPhiDist, -TMath::Pi(), TMath::Pi(), 11);
-
     // Set branch addresses to containers
-    std::vector<o2::MCTrack>* trackArr = nullptr;
-    std::vector<o2::ft0::HitType>* hitArrFT0 = nullptr;
-    std::vector<o2::fv0::Hit>* hitArrFV0 = nullptr;
+    vector<o2::MCTrack>* trackArr = nullptr;
+    vector<o2::ft0::HitType>* hitArrFT0 = nullptr;
+    vector<o2::fv0::Hit>* hitArrFV0 = nullptr;
 
     tree->SetBranchAddress("MCTrack", &trackArr);
     tree->SetBranchAddress("FT0Hit", &hitArrFT0);
     tree->SetBranchAddress("FV0Hit", &hitArrFV0);
+
+    TLeaf* ft0ChID;
 
     double x, y, z, pt, phi, eta;
 
@@ -129,16 +136,15 @@ int main(int argc, char **argv) {
             phi = GetPhi(x, y);
             histos->hPhi->Fill(phi);
 
-            phi = GetAnisotropicPhi(x, y, 0.3, 0.01, vn, psi, fPhiDist);
-            histos->hAnisotropicPhi->Fill(phi);
-
             eta = mcTrack.GetRapidity();
             histos->hEta->Fill(eta);
         }
 
         histos->hMultiplicity->Fill(arrSize);
 
-        AnalyzeHits(hitArrFT0, hitArrFV0, vn, psi, fPhiDist, histos);
+        ft0ChID = tree->GetLeaf("FT0Hit.mDetectorID");
+
+        AnalyzeHits(hitArrFT0, hitArrFV0, ft0ChID, histos, bUseFT0Granularity);
     }
 
     fIn->Close();
@@ -151,9 +157,9 @@ int main(int argc, char **argv) {
 }
 
 //======END OF MAIN PROGRAM======
-void AnalyzeHits(std::vector<o2::ft0::HitType>* hitArrFT0, std::vector<o2::fv0::Hit>* hitArrFV0, double* vn, double* psi, TF1* fPhiDist, JHistos* histos) {
+void AnalyzeHits(vector<o2::ft0::HitType>* hitArrFT0, vector<o2::fv0::Hit>* hitArrFV0, TLeaf* ft0ChID, JHistos* histos, bool bUseFT0Granularity) {
 
-    int i, n, iHit, iDet, arrSize;
+    int i, n, iHit, iDet, arrSize, chID;
     double w = 1.0;
     double x, y, z, phi;
     double EventPlaneA, EventPlaneB, Rsub;
@@ -184,18 +190,25 @@ void AnalyzeHits(std::vector<o2::ft0::HitType>* hitArrFT0, std::vector<o2::fv0::
             normB[iDet] = 0.0;
         }
 
+        //______________________________________________________________________
         // Construct Q-vectors for the detectors and their subevents
         // FT0-A & FT0-C
         arrSize = hitArrFT0->size();
         for (iHit=0; iHit<arrSize; iHit++) {
             const auto& ft0Hit = (*hitArrFT0)[iHit];
 
-            x = ft0Hit.GetX();
-            y = ft0Hit.GetY();
+            if (bUseFT0Granularity) {
+                chID = ft0ChID->GetValue(iHit);
+                x = getFT0ChannelCenterX(chID);
+                y = getFT0ChannelCenterY(chID);
+            } else {
+                x = ft0Hit.GetX();
+                y = ft0Hit.GetY();
+            }
+
             z = ft0Hit.GetZ();
 
             phi = GetPhi(x, y);
-            //phi = GetAnisotropicPhi(x, y, 0.3, 0.01, vn, psi, fPhiDist);
 
             if (z>0) {
                 CalculateQvector(phi, unitVec, Qvec[0], norm[0], n, w);
@@ -229,7 +242,6 @@ void AnalyzeHits(std::vector<o2::ft0::HitType>* hitArrFT0, std::vector<o2::fv0::
             y = fv0Hit.GetY();
 
             phi = GetPhi(x, y);
-            //phi = GetAnisotropicPhi(x, y, 0.3, 0.01, vn, psi, fPhiDist);
 
             CalculateQvector(phi, unitVec, Qvec[2], norm[2], n, w);
             nMult[2]++;
@@ -242,14 +254,22 @@ void AnalyzeHits(std::vector<o2::ft0::HitType>* hitArrFT0, std::vector<o2::fv0::
             }
         }
 
+        //______________________________________________________________________
         // Calculate vobs
         // FT0
         arrSize = hitArrFT0->size();
         for (iHit=0; iHit<arrSize; iHit++) {
             const auto& ft0Hit = (*hitArrFT0)[iHit];
 
-            x = ft0Hit.GetX();
-            y = ft0Hit.GetY();
+            if (bUseFT0Granularity) {
+                chID = ft0ChID->GetValue(iHit);
+                x = getFT0ChannelCenterX(chID);
+                y = getFT0ChannelCenterY(chID);
+            } else {
+                x = ft0Hit.GetX();
+                y = ft0Hit.GetY();
+            }
+
             z = ft0Hit.GetZ();
 
             phi = GetPhi(x, y);
@@ -284,6 +304,7 @@ void AnalyzeHits(std::vector<o2::ft0::HitType>* hitArrFT0, std::vector<o2::fv0::
             Qvec[2] += autocorr;
         }
 
+        //______________________________________________________________________
         for (iDet=0; iDet<DET_N; iDet++) {
             vobs[iDet] /= nMult[iDet];
 
@@ -315,7 +336,44 @@ double GetPhi(double x, double y) {
     return TMath::ATan2(y, x);
 }
 
-double GetPhi0(double phi, double *vn, double *psi) {
+double GetEta(double px, double py, double pz) {
+    double p = TMath::Sqrt(px*px + py*py + pz*pz);
+    return TMath::ATanH(pz/p);
+}
+
+void CalculateQvector(double phi, TComplex unitVec, TComplex &Qvec, double &norm, int n, double w) {
+    norm += w*w;
+    unitVec = TComplex(w*TMath::Cos(n*phi), w*TMath::Sin(n*phi));
+    Qvec += unitVec;
+}
+
+double GetEventPlane(TComplex Qvec, int n) {
+    return TMath::ATan2(Qvec.Im(), Qvec.Re())/n;
+}
+
+double GetVnObs(TComplex Qvec, double phi, int n) {
+    return TMath::Cos(n*(phi - GetEventPlane(Qvec, n)));
+}
+
+// FT0-A: Channels 0-95
+// FT0-C: Channels 96-207
+double getFT0ChannelCenterX(int chID) {
+    if (chID<FT0A_CH_N) {
+        return xFT0A[chID];
+    } else {
+        return xFT0A[chID-FT0A_CH_N-1];
+    }
+}
+
+double getFT0ChannelCenterY(int chID) {
+    if (chID<FT0A_CH_N) {
+        return yFT0A[chID];
+    } else {
+        return yFT0A[chID-FT0A_CH_N-1];
+    }
+}
+
+/**double GetPhi0(double phi, double *vn, double *psi) {
     return phi - 2.0*vn[0]*TMath::Sin(phi-psi[0]) + vn[1]*TMath::Sin(2.0*(phi-psi[1])) + (2.0/3.0)*vn[2]*TMath::Sin(3.0*(phi-psi[2])) + (1.0/2.0)*vn[3]*TMath::Sin(4.0*(phi-psi[3])) + (2.0/5.0)*vn[4]*TMath::Sin(5.0*(phi-psi[4]));
 }
 
@@ -350,23 +408,4 @@ double GetAnisotropicPhi(double x, double y, double phiTemp, double err, double 
     if (phi<-TMath::Pi()) phi += 2*TMath::Pi();
 
     return phi;
-}
-
-double GetEta(double px, double py, double pz) {
-    double p = TMath::Sqrt(px*px + py*py + pz*pz);
-    return TMath::ATanH(pz/p);
-}
-
-void CalculateQvector(double phi, TComplex unitVec, TComplex &Qvec, double &norm, int n, double w) {
-    norm += w*w;
-    unitVec = TComplex(w*TMath::Cos(n*phi), w*TMath::Sin(n*phi));
-    Qvec += unitVec;
-}
-
-double GetEventPlane(TComplex Qvec, int n) {
-    return TMath::ATan2(Qvec.Im(), Qvec.Re())/n;
-}
-
-double GetVnObs(TComplex Qvec, double phi, int n) {
-    return TMath::Cos(n*(phi - GetEventPlane(Qvec, n)));
-}
+}**/

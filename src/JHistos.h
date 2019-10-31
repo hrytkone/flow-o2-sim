@@ -16,7 +16,6 @@ public:
 
 	TH1D *hPt;
     TH1D *hPhi;
-    TH1D *hAnisotropicPhi;
     TH1D *hEta;
     TH1D *hMultiplicity;
 
