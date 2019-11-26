@@ -2,6 +2,9 @@
 
 Macros to test external generators in o2-sim.
 
+Usage:
+`o2-sim -n 10 -g extgen --extGenFile PATH_TO_MACRO/macroname.C`
+
 ## AMPT (amptgen.C)
 * Needs 'ampt.dat' output file from AMPT generator
     * 'ampt.dat' needs to be in the same directory where o2-sim is run
