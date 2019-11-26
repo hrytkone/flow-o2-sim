@@ -9,7 +9,7 @@ Usage:
 * Needs 'ampt.dat' output file from AMPT generator
     * 'ampt.dat' needs to be in the same directory where o2-sim is run
     * Something wrong with the macro: crashes when number of event given to o2-sim is the same as number of event generated using AMPT
-    * use one less event when running o2-sim (in '-n' argument)
+        * use one less event when running o2-sim (in '-n' argument), then it works
 
 ## Pythia8 (py8hiflow.C)
 * Uses ROOT class TPythia8 so Pythia8 needs to be enabled in ROOT (check using `root-config --has-pythia8`)
