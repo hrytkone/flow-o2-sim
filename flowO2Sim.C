@@ -184,6 +184,7 @@ void AnalyzeHits(vector<o2::ft0::HitType>* hitArrFT0, vector<o2::fv0::Hit>* hitA
         n = i+1;
 
         for (iDet=0; iDet<DET_N; iDet++) {
+            nMult[iDet] = 0;
             vobs[iDet] = 0;
             Qvec[iDet]= TComplex(0, 0);
             QvecA[iDet] = TComplex(0, 0);

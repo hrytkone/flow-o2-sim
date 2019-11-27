@@ -10,7 +10,7 @@ double CalculateVn(double QnQnA, double QnAQnB, double w);
 double CalculateVnError(double QnQnA, double QnAQnB, double QnQnAerr, double QnAQnBerr, double w, double wErr);
 void checkUnderOverFlow( TH1 *h );
 
-void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyFlowGraphs.root", const int iDet=0) {
+void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyFlowGraphs.root", const int iDet=2) {
 
     TFile *fIn = TFile::Open(sInputName, "read");
     TFile *fOut = TFile::Open(sOutputName, "recreate");
