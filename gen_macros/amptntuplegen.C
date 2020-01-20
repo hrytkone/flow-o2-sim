@@ -31,7 +31,7 @@ class AMPTGenerator : public FairGenerator
             events = (TNtuple*)mInputFile->Get("amptEvents");
 
             iStartNewEvent = 0;
-            genEventId = 1;
+            previd = -1;
         };
 
         /**
@@ -60,10 +60,12 @@ class AMPTGenerator : public FairGenerator
 
             // Track variables
             Float_t particleid = 0;
+            Float_t charge = 0;
             Float_t px = 0.0, py = 0.0, pz = 0.0, x = 0.0, y = 0.0, z = 0.0;
 
             events->SetBranchAddress("particleId",&particleid);
             events->SetBranchAddress("eventId",&eventid);
+            events->SetBranchAddress("charge",&charge);
             events->SetBranchAddress("px",&px);
             events->SetBranchAddress("py",&py);
             events->SetBranchAddress("pz",&pz);
@@ -73,15 +75,14 @@ class AMPTGenerator : public FairGenerator
 
             Int_t nentries = (Int_t)events->GetEntries();
             for ( Int_t i=iStartNewEvent; i<nentries; i++ ) {
+
                 Int_t entry = events->GetEntry(i);
-                //if (i==iStartNewEvent) cout << "entry : " << entry << endl;
-                //if (events->GetEntry(i)!=0) {
-                //events->GetEntry(i);
+                if (previd==-1) previd = eventid;
                 if (entry>0) {
-                    if ((Int_t)eventid==genEventId) {
+                    if ((Int_t)eventid==previd) {
                         primGen->AddTrack(particleid, px, py, pz, x, y, z);
                     } else {
-                        genEventId++;
+                        previd = eventid;
                         iStartNewEvent = i;
                         break;
                     }
@@ -103,7 +104,7 @@ class AMPTGenerator : public FairGenerator
         const Char_t* mFileName;
         TFile* mInputFile;
         TNtuple* events;
-        Int_t genEventId;
+        Int_t previd;
         Int_t iStartNewEvent;
 
         /**
