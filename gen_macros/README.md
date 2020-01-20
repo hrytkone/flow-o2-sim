@@ -11,6 +11,11 @@ Usage:
     * Something wrong with the macro: crashes when number of event given to o2-sim is the same as number of event generated using AMPT
         * use one less event when running o2-sim (in '-n' argument), then it works
 
+## AMPT NTuple version (amptntuplegen.C)
+* Takes 'ampt.root' file as input
+* 'ampt.root' is generated from 'ampt.dat' file using macro AmptToNTuple.C
+   * The macro basically saves AMPT output to NTuple
+
 ## Pythia8 (py8hiflow.C)
 * Uses ROOT class TPythia8 so Pythia8 needs to be enabled in ROOT (check using `root-config --has-pythia8`)
 * Can be enabled by adding following options to cmake command in aliBuild recipe for ROOT (*PATH_TO_ALICE_DIR/alidist/root.sh*):
@@ -20,3 +25,7 @@ Usage:
     * `-Dpythia8=ON`
 * Adding `pythia8` to the `FEATURES` variable checks that the feature is enabled
 * Build O2 or ROOT again with these options
+
+## ToyFlow (toyflowgen.C)
+* Simple event generator based on ToyFlow code
+* Includes only flow
