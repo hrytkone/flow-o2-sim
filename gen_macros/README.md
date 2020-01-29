@@ -29,3 +29,7 @@ Usage:
 ## ToyFlow (toyflowgen.C)
 * Simple event generator based on ToyFlow code
 * Includes only flow
+
+## General (gengen.C)
+* Takes both ToyFlow and AMPT particle data
+* The data needs to be stored in NTuple
