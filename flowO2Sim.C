@@ -25,6 +25,7 @@
 #include "SimulationDataFormat/MCTrack.h"
 #include "DataFormatsFV0/Hit.h"
 #include "DataFormatsFT0/HitType.h"
+#include "FT0Base/Geometry.h"
 
 // OTHER
 #include "TStopwatch.h"
@@ -40,7 +41,6 @@ double getFV0Phi(int chID);
 void CalculateQvector(double phi, TComplex unitVec, TComplex &Qvec, double &norm, int n, double w);
 double GetEventPlane(TComplex Qvec, int n);
 double GetVnObs(TComplex Qvec, double phi, int n);
-//void AnalyzeFV0Hits(TH1F* hFV0ChMult);
 
 int main(int argc, char **argv) {
 
@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
         return 0;
     };
 
-    bool bUseGranularity = 0;
+    bool bUseGranularity = 1;
 
     TStopwatch timer;
     timer.Start();
@@ -64,33 +64,20 @@ int main(int argc, char **argv) {
     TTree *tree = (TTree*)fIn->Get("o2sim");
     Int_t nEntries = (Int_t)tree->GetEntries();
 
-    const double scale = 1.0;
-    double vn[nCoef] = {scale*0.0, scale*0.15, scale*0.08, scale*0.03, scale*0.01};
-    double psi[nCoef] = {0};
-
     cout << "=========================================== Settings ===========================================" << endl;
     cout << "Input: " << inFileName.Data()
     << ", Events: " << nEntries << endl;
     cout << "Output: " << outFileName.Data() << endl;
-    cout << "Vn inputs: ";
-    for(int i=0; i<nCoef; i++) cout << vn[i] << ", ";
     cout << endl;
     cout << "================================================================================================" << endl;
 
     // Save input numbers
-    TH1D *hInputNumbers = new TH1D("hInputNumbers","hInputNumbers",7, 0.5, 7.5);
+    TH1D *hInputNumbers = new TH1D("hInputNumbers", "hInputNumbers", 7, 0.5, 3.5);
     hInputNumbers->Fill(1, double(nEntries));
-    hInputNumbers->Fill(2, vn[0]);
-    hInputNumbers->Fill(3, vn[1]);
-    hInputNumbers->Fill(4, vn[2]);
-    hInputNumbers->Fill(5, vn[3]);
-    hInputNumbers->Fill(6, vn[4]);
-    hInputNumbers->Fill(7, 1.0); // Counting number of files added with hadd.
+    hInputNumbers->Fill(2, bUseGranularity);
+    hInputNumbers->Fill(3, 1.0); // Counting number of files added with hadd.
     fOut->cd();
     hInputNumbers->Write("hInputNumbers");
-
-    gRandom->SetSeed(0);
-    TRandom3 *rand = new TRandom3(0);
 
     JHistos *histos = new JHistos();
 
@@ -109,39 +96,16 @@ int main(int argc, char **argv) {
     TLeaf* ft0ChID;
     TLeaf* fv0ChID;
 
-    double x, y, z, pt, phi, eta;
-
     int nOutput = nEntries/20;
     if (nOutput<1) nOutput = 1;
     for (int iEvent=0; iEvent<nEntries; iEvent++) {
         if (iEvent % nOutput == 0)
             cout << 100*iEvent/nEntries << " % finished" << endl;
 
-        for (int j=0; j<nCoef; j++) {
-            psi[j] = rand->Uniform(-TMath::Pi(), TMath::Pi());
-        }
-
         tree->GetEntry(iEvent);
 
         // MC tracks
         Int_t arrSize = trackArr->size();
-        for (Int_t iTrack = 0; iTrack<arrSize; iTrack++) {
-
-            const auto& mcTrack = (*trackArr)[iTrack];
-
-            x = mcTrack.GetStartVertexCoordinatesX();
-            y = mcTrack.GetStartVertexCoordinatesY();
-
-            pt = mcTrack.GetPt();
-            histos->hPt->Fill(pt);
-
-            phi = GetPhi(x, y);
-            histos->hPhi->Fill(phi);
-
-            eta = mcTrack.GetRapidity();
-            histos->hEta->Fill(eta);
-        }
-
         histos->hMultiplicity->Fill(arrSize);
 
         ft0ChID = tree->GetLeaf("FT0Hit.mDetectorID");
@@ -177,9 +141,6 @@ void AnalyzeHits(vector<o2::ft0::HitType>* hitArrFT0, vector<o2::fv0::Hit>* hitA
 
     double QnQnA, QnAQnB;
 
-    vector<vector<TComplex>> pTBinsQ;
-    pTBinsQ.resize(PTBINS_N);
-
     for (i=0; i<nCoef; i++) {
         n = i+1;
 
@@ -211,7 +172,6 @@ void AnalyzeHits(vector<o2::ft0::HitType>* hitArrFT0, vector<o2::fv0::Hit>* hitA
             }
 
             z = ft0Hit.GetZ();
-
             phi = GetPhi(x, y);
 
             if (z>0) {
@@ -279,7 +239,6 @@ void AnalyzeHits(vector<o2::ft0::HitType>* hitArrFT0, vector<o2::fv0::Hit>* hitA
             }
 
             z = ft0Hit.GetZ();
-
             phi = GetPhi(x, y);
 
             autocorr = TComplex(w*TMath::Cos(n*phi), w*TMath::Sin(n*phi));
@@ -320,73 +279,31 @@ void AnalyzeHits(vector<o2::ft0::HitType>* hitArrFT0, vector<o2::fv0::Hit>* hitA
         for (iDet=0; iDet<DET_N; iDet++) {
             vobs[iDet] /= nMult[iDet];
 
-            //EventPlaneA = GetEventPlane(QvecA[iDet], n);
-            //EventPlaneB = GetEventPlane(QvecB[iDet], n);
-            EventPlaneA = GetEventPlane(Qvec[0], n);
-            EventPlaneB = GetEventPlane(Qvec[1], n);
+            EventPlaneA = GetEventPlane(QvecA[iDet], n);
+            EventPlaneB = GetEventPlane(QvecB[iDet], n);
+            //EventPlaneA = GetEventPlane(Qvec[0], n);
+            //EventPlaneB = GetEventPlane(Qvec[1], n);
             Rsub = TMath::Cos(n*(EventPlaneA - EventPlaneB));
 
             // EP-method and SP-method
             norm[iDet] = TMath::Sqrt(norm[iDet]);
-            //normA[iDet] = TMath::Sqrt(normA[iDet]);
-            //normB[iDet] = TMath::Sqrt(normB[iDet]);
-            normA[iDet] = TMath::Sqrt(norm[0]);
-            normB[iDet] = TMath::Sqrt(norm[1]);
+            normA[iDet] = TMath::Sqrt(normA[iDet]);
+            normB[iDet] = TMath::Sqrt(normB[iDet]);
+            //normA[iDet] = TMath::Sqrt(norm[0]);
+            //normB[iDet] = TMath::Sqrt(norm[1]);
 
             Qvec[iDet] /= norm[iDet]; QvecA[iDet] /= normA[iDet]; QvecB[iDet] /= normB[iDet];
 
-            QnQnA = Qvec[iDet]*TComplex::Conjugate(QvecA[iDet]);
-            QnAQnB = QvecA[iDet]*TComplex::Conjugate(QvecB[iDet]);
-
             histos->hVnObs[i][iDet]->Fill(vobs[iDet]);
             histos->hRsub[i][iDet]->Fill(Rsub);
-            histos->hQnQnAEP[i][iDet]->Fill(QnQnA/TComplex::Abs(QvecA[iDet]));
-            histos->hQnAQnBEP[i][iDet]->Fill(QnAQnB/(TComplex::Abs(QvecA[iDet])*TComplex::Abs(QvecB[iDet])));
-            histos->hQnQnASP[i][iDet]->Fill(QnQnA);
-            histos->hQnAQnBSP[i][iDet]->Fill(QnAQnB);
+            histos->hQnA[i][iDet]->Fill(QvecA[iDet]);
+            histos->hQnB[i][iDet]->Fill(QvecB[iDet]);
         }
     }
+
+    for(int iDet=0; iDet<DET_N; iDet++)
+        histos->hSqrtSumWeights[iDet]->Fill(norm[iDet]);
 }
-
-//______________________________________________________________________
-/**void AnalyzeFV0Hits(TH1F* hFV0ChMult) {
-
-    for (int iHarmonic=0; iHarmonic<nCoef; iHarmonic++) {
-        int n = iHarmonic + 1;
-        double vnobs = 0.0;
-        TComplex Qvec, QvecA, QvecB;
-        Qvec = TComplex(0, 0);
-        QvecA = TComplex(0, 0);
-        QvecB = TComplex(0, 0);
-
-        // Construct Q-vectors
-        for (int iCh=0; iCh<40; iCh++) {
-            double phi = -7*TMath::Pi()/8 + (iCh%8)*TMath::Pi()/4;
-            double chMult = hFV0ChMult->GetBinContent(iCh);
-            Qvec += TComplex(chMult*TMath::Cos(n*phi), chMult*TMath::Sin(n*phi));
-            if (phi<0) {
-                QvecA += TComplex(chMult*TMath::Cos(n*phi), chMult*TMath::Sin(n*phi));
-            } else {
-                QvecB += TComplex(chMult*TMath::Cos(n*phi), chMult*TMath::Sin(n*phi));
-            }
-        }
-
-        // Calculate v_obs
-        for (int iCh=0; iCh<40; iCh++) {
-            double phi = -7*TMath::Pi()/8 + (iCh%8)*TMath::Pi()/4;
-            double chMult = hFV0ChMult->GetBinContent(iCh);
-            double vobs += chMult*GetVnObs(Qvec, phi, n);
-        }
-
-        // Calculate R_sub
-        double eventPlaneA = GetEventPlane(QvecA, n);
-        double eventPlaneB = GetEventPlane(QvecB, n);
-        double rsub = TMath::Cos(n*(eventPlaneA - eventPlaneB));
-
-        histos->hVnObs[i][2]->Fill(vobs);
-        histos->hRsub[i][2]->Fill(rsub);
-    }
-}**/
 
 //______________________________________________________________________
 double GetPhi(double x, double y) {

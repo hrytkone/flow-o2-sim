@@ -1,16 +1,13 @@
 #include <TSystem.h>
 
-void FinalMacro(TString sIn="toyFlow.root", TString sOut="toyFlowGraphs.root", int readNFiles=1) {
+void FinalMacro() {
     gROOT->ProcessLine(".I src/ResIter.h");
-
-    if (gSystem->AccessPathName(sIn)) {
-        cout << "File \"" << sIn << "\" not found!\n";
-        return 0;
-    }
-
-    cout << "Run MakeGraphs.C: " << Form(".x MakeGraphs.C(\"%s\",\"%s\")",sIn.Data(),sOut.Data()) << "\n";
-    gROOT->ProcessLine(Form(".x MakeGraphs.C(\"%s\",\"%s\")",sIn.Data(),sOut.Data()));
-    cout << "Run PlotVn.C\n";
-    gROOT->ProcessLine(".x PlotVn.C");
-
+    cout << "Run MakeCentralityGraphs.C\n";
+    gROOT->ProcessLine(".x MakeCentralityGraphs.C");
+    //cout << "Run MakeGraphs.C\n";
+    //gROOT->ProcessLine(".x MakeGraphs.C");
+    cout << "Run PlotData.C\n";
+    gROOT->ProcessLine(".x PlotData.C");
+    //cout << "Run PlotVn.C\n";
+    //gROOT->ProcessLine(".x PlotVn.C");
 }

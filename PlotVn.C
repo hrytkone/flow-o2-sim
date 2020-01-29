@@ -11,12 +11,12 @@ TH1D *hInputFlow[nsets];
 
 TGraphErrors *gR[nsets];
 TGraphErrors *gVn[nsets];
-TGraphErrors *gVnEP[nsets];
-TGraphErrors *gVnSP[nsets];
+//TGraphErrors *gVnEP[nsets];
+//TGraphErrors *gVnSP[nsets];
 
 TGraphErrors *gVnRatio[nsets];
-TGraphErrors *gVnEPRatio[nsets];
-TGraphErrors *gVnSPRatio[nsets];
+//TGraphErrors *gVnEPRatio[nsets];
+//TGraphErrors *gVnSPRatio[nsets];
 
 TGraphErrors *gPtBin[nsets];
 
@@ -52,12 +52,12 @@ void PlotVn() {
 
         gR[i] = (TGraphErrors*) fIn[i]->Get("gR");
         gVn[i] = (TGraphErrors*) fIn[i]->Get("gVn");
-        gVnEP[i] = (TGraphErrors*) fIn[i]->Get("gVnEP");
-        gVnSP[i] = (TGraphErrors*) fIn[i]->Get("gVnSP");
+        //gVnEP[i] = (TGraphErrors*) fIn[i]->Get("gVnEP");
+        //gVnSP[i] = (TGraphErrors*) fIn[i]->Get("gVnSP");
 
         gVnRatio[i] = (TGraphErrors*) fIn[i]->Get("gVnRatio");
-        gVnEPRatio[i] = (TGraphErrors*) fIn[i]->Get("gVnEPRatio");
-        gVnSPRatio[i] = (TGraphErrors*) fIn[i]->Get("gVnSPRatio");
+        //gVnEPRatio[i] = (TGraphErrors*) fIn[i]->Get("gVnEPRatio");
+        //gVnSPRatio[i] = (TGraphErrors*) fIn[i]->Get("gVnSPRatio");
 
         gR[i]->SetMarkerStyle(mMarker[i]+1);
         gR[i]->SetMarkerColor(i+1);
@@ -67,13 +67,13 @@ void PlotVn() {
         gVn[i]->SetMarkerColor(i+1); gVnRatio[i]->SetMarkerColor(i+1);
         gVn[i]->SetMarkerSize(mSize); gVnRatio[i]->SetMarkerSize(mSize);
 
-        gVnEP[i]->SetMarkerStyle(mMarker[i]); gVnEPRatio[i]->SetMarkerStyle(mMarker[i]);
-        gVnEP[i]->SetMarkerColor(i+3); gVnEPRatio[i]->SetMarkerColor(i+3);
-        gVnEP[i]->SetMarkerSize(mSize); gVnEPRatio[i]->SetMarkerSize(mSize);
+        //gVnEP[i]->SetMarkerStyle(mMarker[i]); gVnEPRatio[i]->SetMarkerStyle(mMarker[i]);
+        //gVnEP[i]->SetMarkerColor(i+3); gVnEPRatio[i]->SetMarkerColor(i+3);
+        //gVnEP[i]->SetMarkerSize(mSize); gVnEPRatio[i]->SetMarkerSize(mSize);
 
-        gVnSP[i]->SetMarkerStyle(mMarker[i]); gVnSPRatio[i]->SetMarkerStyle(mMarker[i]);
-        gVnSP[i]->SetMarkerColor(i+4); gVnSPRatio[i]->SetMarkerColor(i+4);
-        gVnSP[i]->SetMarkerSize(mSize); gVnSPRatio[i]->SetMarkerSize(mSize);
+        //gVnSP[i]->SetMarkerStyle(mMarker[i]); gVnSPRatio[i]->SetMarkerStyle(mMarker[i]);
+        //gVnSP[i]->SetMarkerColor(i+4); gVnSPRatio[i]->SetMarkerColor(i+4);
+        //gVnSP[i]->SetMarkerSize(mSize); gVnSPRatio[i]->SetMarkerSize(mSize);
 
     }
 
@@ -102,11 +102,11 @@ void PlotVn() {
         }
 
 
-        gVnEP[i]->Draw("SAME P");
-        leg1->AddEntry(gVnEP[i], "v_{n}{EP}", "p");
+        //gVnEP[i]->Draw("SAME P");
+        //leg1->AddEntry(gVnEP[i], "v_{n}{EP}", "p");
 
-        gVnSP[i]->Draw("SAME P");
-        leg1->AddEntry(gVnSP[i], "v_{n}{SP}", "p");
+        //gVnSP[i]->Draw("SAME P");
+        //leg1->AddEntry(gVnSP[i], "v_{n}{SP}", "p");
 
         hInputFlow[i]->Draw("SAME HIST");
         leg1->AddEntry(hInputFlow[i], "Input", "l");
@@ -128,8 +128,8 @@ void PlotVn() {
             gVnRatio[i]->Draw("SAME P");
         }
 
-        gVnEPRatio[i]->Draw("SAME P");
-        gVnSPRatio[i]->Draw("SAME P");
+        //gVnEPRatio[i]->Draw("SAME P");
+        //gVnSPRatio[i]->Draw("SAME P");
     }
 
     fpad->C->SaveAs("figures/vn-with-ratio.pdf");

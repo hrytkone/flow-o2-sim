@@ -34,15 +34,21 @@ JHistos::JHistos(){
             hVnObs[i][j] = new TH1D(Form("hVnObsH%02iD%02i",i+1,j),Form("hVnObsH%02iD%02i",i+1,j),401,-1.5,1.5);
             hVnObs[i][j]->Sumw2();
 
-            hQnQnAEP[i][j] = new TH1D(Form("hQnQnAEPH%02iD%02i",i+1,j),Form("hQnQnAEPH%02iD%02i",i+1,j),401,-50.0,50.0);
-            hQnQnAEP[i][j]->Sumw2();
-            hQnAQnBEP[i][j] = new TH1D(Form("hQnAQnBEPH%02iD%02i",i+1,j),Form("hQnAQnBEPH%02iD%02i",i+1,j),404,-1.01,1.01);
-            hQnAQnBEP[i][j]->Sumw2();
+            hQnA[i][j] = new TH1D(Form("hQnAH%02iD%02i",i+1,j),Form("hQnAH%02iD%02i",i+1,j),401,-100,100);
+            hQnA[i][j]->Sumw2();
 
-            hQnQnASP[i][j] = new TH1D(Form("hQnQnASPH%02iD%02i",i+1,j),Form("hQnQnASPH%02iD%02i",i+1,j),401,-10.0,110.0);
-            hQnQnASP[i][j]->Sumw2();
-            hQnAQnBSP[i][j] = new TH1D(Form("hQnAQnBSPH%02iD%02i",i+1,j),Form("hQnAQnBSPH%02iD%02i",i+1,j),401,-10.0,110.0);
-            hQnAQnBSP[i][j]->Sumw2();
+            hQnB[i][j] = new TH1D(Form("hQnBH%02iD%02i",i+1,j),Form("hQnBH%02iD%02i",i+1,j),401,-100,100);
+            hQnB[i][j]->Sumw2();
+
+            //hQnQnAEP[i][j] = new TH1D(Form("hQnQnAEPH%02iD%02i",i+1,j),Form("hQnQnAEPH%02iD%02i",i+1,j),401,-50.0,50.0);
+            //hQnQnAEP[i][j]->Sumw2();
+            //hQnAQnBEP[i][j] = new TH1D(Form("hQnAQnBEPH%02iD%02i",i+1,j),Form("hQnAQnBEPH%02iD%02i",i+1,j),404,-1.01,1.01);
+            //hQnAQnBEP[i][j]->Sumw2();
+
+            //hQnQnASP[i][j] = new TH1D(Form("hQnQnASPH%02iD%02i",i+1,j),Form("hQnQnASPH%02iD%02i",i+1,j),401,-10.0,110.0);
+            //hQnQnASP[i][j]->Sumw2();
+            //hQnAQnBSP[i][j] = new TH1D(Form("hQnAQnBSPH%02iD%02i",i+1,j),Form("hQnAQnBSPH%02iD%02i",i+1,j),401,-10.0,110.0);
+            //hQnAQnBSP[i][j]->Sumw2();
         }
     }
 

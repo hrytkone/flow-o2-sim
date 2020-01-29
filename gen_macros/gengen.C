@@ -1,5 +1,8 @@
 /**
- * AMPT generator from macro
+ * General macro for O2 that needs to be given a ROOT file with particle data
+ * in following NTuple format:
+ *
+ *      eventId:particleId:px:py:pz:x:y:z:isHadron:charge
  *
  * "Pythia6Generator.cxx" and "extgen.C" from ALICE O2 framework used as
  * template
@@ -12,23 +15,34 @@
 #include <cstdio>
 #endif
 
-class AMPTGenerator : public FairGenerator
+class GeneralGenerator : public FairGenerator
 {
     public:
 
         /**
          * Standard constructor
-         * @param inputFile The input file name
+         * @param inputFile     The input file name
+         * @param inputGenType  The initial generator type
          */
-        AMPTGenerator(const char* inputFile)
-            : FairGenerator("AMPTGenerator"), mFileName(inputFile), mInputFile(nullptr)
+        GeneralGenerator(const char* inputFile, const char* inputGenType)
+            : FairGenerator("GeneralGenerator"), mFileName(inputFile),
+              mInputFile(nullptr), mGenType(inputGenType)
         {
             std::cout << "Opening input file " << mFileName << std::endl;
             mInputFile = TFile::Open(mFileName);
             if (!mInputFile->IsOpen()) {
-                std::cout << "cannot open the input file" << std::endl;
+                std::cout << "cannot open the input file\n";
             }
-            events = (TNtuple*)mInputFile->Get("amptEvents");
+
+            if (strcmp(inputGenType, "ampt") == 0) {
+                std::cout << "Using data from AMPT\n";
+                events = (TNtuple*)mInputFile->Get("amptEvents");
+            }
+
+            if (strcmp(inputGenType, "toyflow") == 0) {
+                std::cout << "Using data from ToyFlow\n";
+                events = (TNtuple*)mInputFile->Get("events");
+            }
 
             iStartNewEvent = 0;
             previd = -1;
@@ -37,7 +51,7 @@ class AMPTGenerator : public FairGenerator
         /**
          * Destructor
          */
-        ~AMPTGenerator() override
+        ~GeneralGenerator() override
         {
             CloseInput();
         };
@@ -102,6 +116,7 @@ class AMPTGenerator : public FairGenerator
 
     private:
         const Char_t* mFileName;
+        const Char_t* mGenType;
         TFile* mInputFile;
         TNtuple* events;
         Int_t previd;
@@ -119,10 +134,18 @@ class AMPTGenerator : public FairGenerator
         };
 };
 
+/**
+ * @param  inputFile     ROOT file that includes the data in ntuple
+ * @param  inputGenType  Generator that was used to generate the data
+ *                       Following generators available:
+ *                          - ampt
+ *                          - toyflow
+ * @return               The generator
+ */
 FairGenerator*
-    amptntuplegen(const char* inputFile = "ampt_cent_70-80.root")
+    gengen(const char* inputFile = "/home/heimarry/Desktop/centrality_data/input-toyflow/toyFlow_60-70.root", const char* inputGenType = "toyflow")
 {
-    std::cout << "AMPT generator" << std::endl;
-    auto gen = new AMPTGenerator(inputFile);
+    std::cout << "General generator for data in NTuple format" << std::endl;
+    auto gen = new GeneralGenerator(inputFile, inputGenType);
     return gen;
 }

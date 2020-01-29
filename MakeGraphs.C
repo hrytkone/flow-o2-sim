@@ -10,7 +10,7 @@ double CalculateVn(double QnQnA, double QnAQnB, double w);
 double CalculateVnError(double QnQnA, double QnAQnB, double QnQnAerr, double QnAQnBerr, double w, double wErr);
 void checkUnderOverFlow( TH1 *h );
 
-void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyFlowGraphs.root", const int iDet=2) {
+void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyFlowGraphs.root", const int iDet=0) {
 
     TFile *fIn = TFile::Open(sInputName, "read");
     TFile *fOut = TFile::Open(sOutputName, "recreate");
@@ -95,7 +95,7 @@ void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyF
     }
 
     //vn{EP} and vn{SP}
-    TH1D *hQnQnAEP[nCoef][DET_N];
+    /**TH1D *hQnQnAEP[nCoef][DET_N];
     TH1D *hQnAQnBEP[nCoef][DET_N];
     TH1D *hQnQnASP[nCoef][DET_N];
     TH1D *hQnAQnBSP[nCoef][DET_N];
@@ -119,10 +119,17 @@ void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyF
     double vnEPRatio[nCoef], errorVnEPRatio[nCoef] = {0};
     double vnSPRatio[nCoef], errorVnSPRatio[nCoef] = {0};
     for (i=0; i<nCoef; i++) {
-        vnEP[i] = CalculateVn(hQnQnAEP[i][iDet]->GetMean(), hQnAQnBEP[i][iDet]->GetMean(), w);
-        errorVnEP[i] = CalculateVnError(hQnQnAEP[i][iDet]->GetMean(), hQnAQnBEP[i][iDet]->GetMean(), hQnQnAEP[i][iDet]->GetMeanError(), hQnAQnBEP[i][iDet]->GetMeanError(),  w, wError);
-        vnSP[i] = CalculateVn(hQnQnASP[i][iDet]->GetMean(), hQnAQnBSP[i][iDet]->GetMean(), w);
-        errorVnSP[i] = CalculateVnError(hQnQnASP[i][iDet]->GetMean(), hQnAQnBSP[i][iDet]->GetMean(), hQnQnASP[i][iDet]->GetMeanError(), hQnAQnBSP[i][iDet]->GetMeanError(),  w, wError);
+        vnEP[i] = CalculateVn(100*hQnQnAEP[i][iDet]->GetMean(), 100*hQnAQnBEP[i][iDet]->GetMean(), w);
+        errorVnEP[i] = CalculateVnError(100*hQnQnAEP[i][iDet]->GetMean(), 100*hQnAQnBEP[i][iDet]->GetMean(), 100*hQnQnAEP[i][iDet]->GetMeanError(), 100*hQnAQnBEP[i][iDet]->GetMeanError(),  w, wError);
+        vnSP[i] = CalculateVn(100*hQnQnASP[i][iDet]->GetMean(), 100*hQnAQnBSP[i][iDet]->GetMean(), w);
+        errorVnSP[i] = CalculateVnError(100*hQnQnASP[i][iDet]->GetMean(), 100*hQnAQnBSP[i][iDet]->GetMean(), 100*hQnQnASP[i][iDet]->GetMeanError(), 100*hQnAQnBSP[i][iDet]->GetMeanError(),  w, wError);
+
+        cout << "QnQnAEP"<< i+1 << " = " << 100*hQnQnAEP[i][iDet]->GetMean() << "\n";
+        cout << "QnAQnBEP"<< i+1 << " = " << 100*hQnAQnBEP[i][iDet]->GetMean() << "\n";
+        cout << "w" << i+1 << " = " << w << "\n";
+
+        cout << "vnEP"<< i+1 << " = " << vnEP[i] << "\n";
+        cout << "vnSP"<< i+1 << " = " << vnSP[i] << "\n";
 
         if(inputFlow[i]==0) {
             vnEPRatio[i] = 0;
@@ -136,34 +143,34 @@ void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyF
             vnSPRatio[i] = vnSP[i]/inputFlow[i];
             errorVnSPRatio[i] = errorVnSP[i]/inputFlow[i];
         }
-    }
+    }**/
 
     // Make graphs
     TGraphErrors *gVn = new TGraphErrors(nCoef);
-    TGraphErrors *gVnEP = new TGraphErrors(nCoef);
-    TGraphErrors *gVnSP = new TGraphErrors(nCoef);
+    //TGraphErrors *gVnEP = new TGraphErrors(nCoef);
+    //TGraphErrors *gVnSP = new TGraphErrors(nCoef);
     TGraphErrors *gR = new TGraphErrors(nCoef);
 
     TGraphErrors *gVnRatio = new TGraphErrors(nCoef);
-    TGraphErrors *gVnEPRatio = new TGraphErrors(nCoef);
-    TGraphErrors *gVnSPRatio = new TGraphErrors(nCoef);
+    //TGraphErrors *gVnEPRatio = new TGraphErrors(nCoef);
+    //TGraphErrors *gVnSPRatio = new TGraphErrors(nCoef);
 
     for(i = 0; i < nCoef; i++){
         gVn->SetPoint(i, double(i+1)-0.1, vn[i]);
         gVn->SetPointError(i, 0.0, errorVn[i]);
-        gVnEP->SetPoint(i, double(i+1)+0.1, vnEP[i]);
-        gVnEP->SetPointError(i, 0.0, errorVnEP[i]);
-        gVnSP->SetPoint(i, double(i+1)+0.3, vnSP[i]);
-        gVnSP->SetPointError(i, 0.0, errorVnSP[i]);
+        //gVnEP->SetPoint(i, double(i+1)+0.1, vnEP[i]);
+        //gVnEP->SetPointError(i, 0.0, errorVnEP[i]);
+        //gVnSP->SetPoint(i, double(i+1)+0.3, vnSP[i]);
+        //gVnSP->SetPointError(i, 0.0, errorVnSP[i]);
         gR->SetPoint(i, double(i+1)+0.05, R[i]);
         gR->SetPointError(i, 0.0, errorR[i]);
 
         gVnRatio->SetPoint(i, double(i+1)-0.1, vnRatio[i]);
         gVnRatio->SetPointError(i, 0.0, errorVnRatio[i]);
-        gVnEPRatio->SetPoint(i, double(i+1)+0.1, vnEPRatio[i]);
-        gVnEPRatio->SetPointError(i, 0.0, errorVnEPRatio[i]);
-        gVnSPRatio->SetPoint(i, double(i+1)+0.3, vnSPRatio[i]);
-        gVnSPRatio->SetPointError(i, 0.0, errorVnSPRatio[i]);
+        //gVnEPRatio->SetPoint(i, double(i+1)+0.1, vnEPRatio[i]);
+        //gVnEPRatio->SetPointError(i, 0.0, errorVnEPRatio[i]);
+        //gVnSPRatio->SetPoint(i, double(i+1)+0.3, vnSPRatio[i]);
+        //gVnSPRatio->SetPointError(i, 0.0, errorVnSPRatio[i]);
     }
 
     fOut->cd();
@@ -171,12 +178,12 @@ void MakeGraphs(TString sInputName = "toyFlow.root", TString sOutputName = "toyF
     hInputFlow->Write("hInputFlow");
     gVn->Write("gVn");
     gR->Write("gR");
-    gVnEP->Write("gVnEP");
-    gVnSP->Write("gVnSP");
+    //gVnEP->Write("gVnEP");
+    //gVnSP->Write("gVnSP");
 
     gVnRatio->Write("gVnRatio");
-    gVnEPRatio->Write("gVnEPRatio");
-    gVnSPRatio->Write("gVnSPRatio");
+    //gVnEPRatio->Write("gVnEPRatio");
+    //gVnSPRatio->Write("gVnSPRatio");
 
     fOut->Close();
 

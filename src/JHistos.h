@@ -25,12 +25,15 @@ public:
     TH1D *hRsub[nCoef][DET_N];
     TH1D *hVnObs[nCoef][DET_N];
 
+    TH1D *hQnA[nCoef][DET_N];
+    TH1D *hQnB[nCoef][DET_N];
+
     // Histograms for EP-method
-    TH1D *hQnQnAEP[nCoef][DET_N];
-    TH1D *hQnAQnBEP[nCoef][DET_N];
+    //TH1D *hQnQnAEP[nCoef][DET_N];
+    //TH1D *hQnAQnBEP[nCoef][DET_N];
 
     // Histograms for SP-method
-    TH1D *hQnQnASP[nCoef][DET_N];
-    TH1D *hQnAQnBSP[nCoef][DET_N];
+    //TH1D *hQnQnASP[nCoef][DET_N];
+    //TH1D *hQnAQnBSP[nCoef][DET_N];
 
 };
